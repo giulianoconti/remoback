@@ -16,6 +16,19 @@ body {
   margin-top: 1rem;
 }
 
+.uploadFile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("/imgs/uploadFile.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 64px;
+  width: 64px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .img {
   width: 100%;
   margin-bottom: 15px;
@@ -76,7 +89,6 @@ body {
   background-color: rgb(100, 0, 100);
   border-radius: 5px 5px 0 0;
   padding: 10px;
-  font-size: 20px;
   font-weight: bold;
   cursor: copy;
   text-align: center;
@@ -120,4 +132,47 @@ body {
   text-decoration: none;
   color: rgb(0, 0, 0);
   margin-left: 10px;
+}
+
+@media screen and (max-width: 555px) {
+  
+  .mt-1 {
+    margin-top: 0;
+  }
+
+  .border {
+    border: 0;
+  }
+  
+  .title-inputs {
+    margin: 0;
+    padding: 10px;
+  }
+  
+  .colors {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .input {
+    width: 50%;
+  }
+  
+  .container {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .container-items {
+    width: 100%;
+    border-radius: 0;
+  }
+  
+  .drag-drop {
+    width: 100%;
+    border-radius: 0;
+    padding: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
 }

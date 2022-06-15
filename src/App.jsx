@@ -94,8 +94,8 @@ export const App = () => {
         <div {...getRootProps()}>
           <input {...getInputProps()} />
           <div className="drag-drop">
-            <img src="/imgs/uploadFile.png" alt="uploadFile" />
-            <h3>Drag & Drop To Upload File</h3>
+            <div className="uploadFile"/>
+            <h3>Drag & Drop To Upload File -  Drop To Upload File Drop To Upload File</h3>
             <h3>Or</h3>
             <h3>Browse File</h3>
           </div>
@@ -160,7 +160,7 @@ export const App = () => {
       </div>
 
       <footer className="footer">
-        <h3>Made by:</h3>
+        <h4>Made by:</h4>
         <a className="linkedin" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">Giuliano Conti</a>
       </footer>
     </div>
