@@ -94,7 +94,7 @@ export const App = () => {
         <div {...getRootProps()}>
           <input {...getInputProps()} />
           <div className="drag-drop">
-            <img src="/src/uploadFile.png" alt="uploadFile" />
+            <img src="/imgs/uploadFile.png" alt="uploadFile" />
             <h3>Drag & Drop To Upload File</h3>
             <h3>Or</h3>
             <h3>Browse File</h3>
