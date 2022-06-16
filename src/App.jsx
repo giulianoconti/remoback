@@ -51,7 +51,7 @@ export const App = () => {
   const downloadImage = () => {
     const canvas = canvasRef.current;
     const link = document.createElement("a");
-    link.download = imgRef.current.id + "-RemovedBG.png";
+    link.download = imgRef.current.name + "-RemovedBG.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
@@ -90,6 +90,7 @@ export const App = () => {
   };
 
   const showFile = (file) => {
+    imgRef.current.name = file.name.split(".")[0];
     const fileType = file.type;
     const validExtensions = ["image/jpeg", "image/jpg", "image/png"];
     if (validExtensions.includes(fileType)) {
@@ -104,7 +105,7 @@ export const App = () => {
 
   return (
     <div className="container-all">
-      <div className="container-app">
+      <div className="container-app border-radius-5 mt-10">
         <div className="container-drop text-center unselectable" ref={dropAreaRef} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={fileDrop}>
           <div className="w-50 mx-auto mb-10">
             <div className="upload-file" />
