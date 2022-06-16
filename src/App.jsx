@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
-import { useDropzone } from "react-dropzone";
 
 export const App = () => {
   const imgRef = useRef(null);
   const canvasRef = useRef(null);
+  const dropAreaRef = useRef(null);
+  const textDropAreaRef = useRef(null);
   const [widthCanvas, setwidthCanvas] = useState(0);
   const [heightCanvas, setheightCanvas] = useState(0);
-  const [files, setFiles] = useState([]);
   const [removeWhatColor, setRemoveWhatColor] = useState({
     red1: 240,
     green1: 240,
@@ -17,29 +17,10 @@ export const App = () => {
     blue2: 255,
   });
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: "image/*",
-    onDrop: (acceptedFiles) => {
-      setFiles(
-        acceptedFiles.map((file) =>
-          Object.assign(file, {
-            preview: URL.createObjectURL(file),
-          })
-        )
-      );
-    },
-  });
-
-  const images = files.map((file) => {
-    return <img id={file.name.split(".")[0]} className="img" ref={imgRef} src={file.preview} alt="preview" key={file.name} />;
-  });
-
   const handleClick = () => {
     setwidthCanvas(imgRef.current.naturalWidth);
     setheightCanvas(imgRef.current.naturalHeight);
-    setTimeout(() => {
-      removeBackground();
-    }, 10);
+    setTimeout(() => removeBackground());
   };
 
   const removeBackground = () => {
@@ -76,75 +57,148 @@ export const App = () => {
   };
 
   const changeColor = (e) => {
-    setRemoveWhatColor({
-      ...removeWhatColor,
-      [e.target.name]: e.target.value,
-    });
+    if (!isNaN(e.target.value)) {
+      setRemoveWhatColor({
+        ...removeWhatColor,
+        [e.target.name]: e.target.value,
+      });
+    }
+  };
+
+  const [Image, setImage] = useState(null);
+
+  const dragOver = (e) => {
+    e.preventDefault();
+    dropAreaRef.current.style.background = "rgb(150, 50, 150)";
+    textDropAreaRef.current.textContent = "Drop Image";
+  };
+  const dragLeave = (e) => {
+    e.preventDefault();
+    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
+  };
+  const fileDrop = (e) => {
+    e.preventDefault();
+    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
+    showFile(e.dataTransfer.files[0]);
+  };
+
+  const browseFile = (e) => {
+    e.preventDefault();
+    showFile(e.target.files[0]);
+  };
+
+  const showFile = (file) => {
+    const fileType = file.type;
+    const validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+    if (validExtensions.includes(fileType)) {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        const fileURL = fileReader.result;
+        setImage(fileURL);
+      };
+      fileReader.readAsDataURL(file);
+    }
   };
 
   return (
-    <div className="container mt-1">
-      <div className="container-items border bg-app">
-        <div {...getRootProps()}>
-          <input {...getInputProps()} />
-          <div className="drag-drop">
-            <div className="uploadFile" />
-            <h3>Drag & Drop To Upload File - Drop To Upload File Drop To Upload File</h3>
-            <h3>Or</h3>
-            <h3>Browse File</h3>
+    <div className="container-all">
+      <div className="container-app">
+        <div className="container-drop text-center unselectable" ref={dropAreaRef} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={fileDrop}>
+          <div className="w-50 mx-auto mb-10">
+            <div className="upload-file" />
+            <h3 className="text-white" ref={textDropAreaRef}>
+              Drag & Drop To Upload File
+            </h3>
+            <h3 className="text-white mb-10">Or</h3>
+            <label>
+              <input className="d-none" onChange={browseFile} type="file" placeholder="hola" />
+              <span className="btn">Browse File</span>
+            </label>
           </div>
         </div>
 
-        <div className="border-line flex" />
-        <div className="container-items">{images}</div>
-        <div className="border-line flex" />
-        <div className="container-items">
-          <canvas className="canvas" ref={canvasRef} width={`${widthCanvas}px`} height={`${heightCanvas}px`}></canvas>
-        </div>
-        <div className="border-line flex" />
-
-        <h3 className="title-inputs">Choose color range you want to remove</h3>
-        <div className="inputs flex">
-          <div>
-            <h5 className="colors">Red</h5>
-            <input className="input" name="red1" value={removeWhatColor.red1} onChange={changeColor} />
-            <h5 className="colors">Green</h5>
-            <input className="input" name="green1" value={removeWhatColor.green1} onChange={changeColor} />
-            <h5 className="colors">Blue</h5>
-            <input className="input" name="blue1" value={removeWhatColor.blue1} onChange={changeColor} />
-          </div>
-          <div>
-            <div className="flex">
-              <div
-                style={{
-                  marginLeft: "10px",
-                  width: "50px",
-                  height: "165px",
-                  backgroundColor: "rgb(" + removeWhatColor.red1 + "," + removeWhatColor.green1 + "," + removeWhatColor.blue1 + ")",
-                }}
-              />
-
-              <div
-                style={{
-                  marginRight: "10px",
-                  width: "50px",
-                  height: "165px",
-                  backgroundColor: "rgb(" + removeWhatColor.red2 + "," + removeWhatColor.green2 + "," + removeWhatColor.blue2 + ")",
-                }}
-              />
-            </div>
-          </div>
-          <div>
-            <h5 className="colors">Red</h5>
-            <input className="input" name="red2" value={removeWhatColor.red2} onChange={changeColor} />
-            <h5 className="colors">Green</h5>
-            <input className="input" name="green2" value={removeWhatColor.green2} onChange={changeColor} />
-            <h5 className="colors">Blue</h5>
-            <input className="input" name="blue2" value={removeWhatColor.blue2} onChange={changeColor} />
-          </div>
+        <div className="container-images">
+          <img className="max-w-full max-h-200 flex mx-auto" ref={imgRef} src={Image}></img>
+          <canvas className="max-w-full max-h-200 flex mx-auto" ref={canvasRef} width={widthCanvas} height={heightCanvas}></canvas>
         </div>
 
-        <div className="flex">
+        <div className="container-choose-color text-white text-center">
+          <h3>Choose color range you want to remove</h3>
+          <div className="flex justify-center">
+            <ul className="w-full">
+              <li className="style-type-none">
+                <h5>Red</h5>
+                <input
+                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
+                  name="red1"
+                  value={removeWhatColor.red1}
+                  onChange={changeColor}
+                />
+              </li>
+              <li className="style-type-none">
+                <h5>Green</h5>
+                <input
+                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
+                  name="green1"
+                  value={removeWhatColor.green1}
+                  onChange={changeColor}
+                />
+              </li>
+              <li className="style-type-none">
+                <h5>Blue</h5>
+                <input
+                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
+                  name="blue1"
+                  value={removeWhatColor.blue1}
+                  onChange={changeColor}
+                />
+              </li>
+            </ul>
+
+            <div
+              className="w-50 ml-10 border-t-2 border-b-2 border-l-2"
+              style={{ backgroundColor: "rgb(" + removeWhatColor.red1 + "," + removeWhatColor.green1 + "," + removeWhatColor.blue1 + ")" }}
+            />
+            <div
+              className="w-50 mr-10 border-t-2 border-b-2 border-r-2"
+              style={{ backgroundColor: "rgb(" + removeWhatColor.red2 + "," + removeWhatColor.green2 + "," + removeWhatColor.blue2 + ")" }}
+            />
+
+            <ul className="w-full">
+              <li className="style-type-none">
+                <h5>Red</h5>
+                <input
+                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
+                  name="red2"
+                  value={removeWhatColor.red2}
+                  onChange={changeColor}
+                />
+              </li>
+              <li className="style-type-none">
+                <h5>Green</h5>
+                <input
+                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
+                  name="green2"
+                  value={removeWhatColor.green2}
+                  onChange={changeColor}
+                />
+              </li>
+              <li className="style-type-none">
+                <h5>Blue</h5>
+                <input
+                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
+                  name="blue2"
+                  value={removeWhatColor.blue2}
+                  onChange={changeColor}
+                />
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="container-buttons">
           <button className="btn" onClick={handleClick}>
             Remove Background
           </button>
@@ -155,10 +209,9 @@ export const App = () => {
           )}
         </div>
       </div>
-
       <footer className="footer">
-        <h4>Made by:</h4>
-        <a className="linkedin" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">
+        <p className="footer-p">Made by:</p>
+        <a className="footer-a" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">
           Giuliano Conti
         </a>
       </footer>
