@@ -7,6 +7,7 @@ export const App = () => {
   const textDropAreaRef = useRef(null);
   const [widthCanvas, setwidthCanvas] = useState(0);
   const [heightCanvas, setheightCanvas] = useState(0);
+  const [Image, setImage] = useState(null);
   const [removeWhatColor, setRemoveWhatColor] = useState({
     red1: 240,
     green1: 240,
@@ -16,6 +17,42 @@ export const App = () => {
     green2: 255,
     blue2: 255,
   });
+
+  const dragOver = (e) => {
+    e.preventDefault();
+    dropAreaRef.current.style.background = "rgb(150, 50, 150)";
+    textDropAreaRef.current.textContent = "Drop Image";
+  };
+  const dragLeave = (e) => {
+    e.preventDefault();
+    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
+  };
+  const fileDrop = (e) => {
+    e.preventDefault();
+    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
+    showFile(e.dataTransfer.files[0]);
+  };
+
+  const browseFile = (e) => {
+    e.preventDefault();
+    showFile(e.target.files[0]);
+  };
+
+  const showFile = (file) => {
+    imgRef.current.name = file.name.split(".")[0];
+    const fileType = file.type;
+    const validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+    if (validExtensions.includes(fileType)) {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        const fileURL = fileReader.result;
+        setImage(fileURL);
+      };
+      fileReader.readAsDataURL(file);
+    }
+  };
 
   const handleClick = () => {
     setwidthCanvas(imgRef.current.naturalWidth);
@@ -62,44 +99,6 @@ export const App = () => {
         ...removeWhatColor,
         [e.target.name]: e.target.value,
       });
-    }
-  };
-
-  const [Image, setImage] = useState(null);
-
-  const dragOver = (e) => {
-    e.preventDefault();
-    dropAreaRef.current.style.background = "rgb(150, 50, 150)";
-    textDropAreaRef.current.textContent = "Drop Image";
-  };
-  const dragLeave = (e) => {
-    e.preventDefault();
-    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
-    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
-  };
-  const fileDrop = (e) => {
-    e.preventDefault();
-    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
-    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
-    showFile(e.dataTransfer.files[0]);
-  };
-
-  const browseFile = (e) => {
-    e.preventDefault();
-    showFile(e.target.files[0]);
-  };
-
-  const showFile = (file) => {
-    imgRef.current.name = file.name.split(".")[0];
-    const fileType = file.type;
-    const validExtensions = ["image/jpeg", "image/jpg", "image/png"];
-    if (validExtensions.includes(fileType)) {
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        const fileURL = fileReader.result;
-        setImage(fileURL);
-      };
-      fileReader.readAsDataURL(file);
     }
   };
 
