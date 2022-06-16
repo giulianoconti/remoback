@@ -31,11 +31,7 @@ export const App = () => {
   });
 
   const images = files.map((file) => {
-    return (
-      <div key={file.name}>
-        <img id={file.name.split(".")[0]} className="img" ref={imgRef} src={file.preview} alt="preview" />
-      </div>
-    );
+    return <img id={file.name.split(".")[0]} className="img" ref={imgRef} src={file.preview} alt="preview" key={file.name} />;
   });
 
   const handleClick = () => {
@@ -80,8 +76,6 @@ export const App = () => {
   };
 
   const changeColor = (e) => {
-    console.log([e.target.name]);
-    console.log(e.target.value);
     setRemoveWhatColor({
       ...removeWhatColor,
       [e.target.name]: e.target.value,
@@ -94,17 +88,20 @@ export const App = () => {
         <div {...getRootProps()}>
           <input {...getInputProps()} />
           <div className="drag-drop">
-            <div className="uploadFile"/>
-            <h3>Drag & Drop To Upload File -  Drop To Upload File Drop To Upload File</h3>
+            <div className="uploadFile" />
+            <h3>Drag & Drop To Upload File - Drop To Upload File Drop To Upload File</h3>
             <h3>Or</h3>
             <h3>Browse File</h3>
           </div>
         </div>
 
+        <div className="border-line flex" />
+        <div className="container-items">{images}</div>
+        <div className="border-line flex" />
         <div className="container-items">
-          {images}
           <canvas className="canvas" ref={canvasRef} width={`${widthCanvas}px`} height={`${heightCanvas}px`}></canvas>
         </div>
+        <div className="border-line flex" />
 
         <h3 className="title-inputs">Choose color range you want to remove</h3>
         <div className="inputs flex">
@@ -161,7 +158,9 @@ export const App = () => {
 
       <footer className="footer">
         <h4>Made by:</h4>
-        <a className="linkedin" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">Giuliano Conti</a>
+        <a className="linkedin" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">
+          Giuliano Conti
+        </a>
       </footer>
     </div>
   );
