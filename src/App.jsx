@@ -4,42 +4,44 @@ export const App = () => {
   const imgRef = useRef(null);
   const canvasRef = useRef(null);
   const dropAreaRef = useRef(null);
-  const textDropAreaRef = useRef(null);
+  const [Image, setImage] = useState(null);
   const [widthCanvas, setwidthCanvas] = useState(0);
   const [heightCanvas, setheightCanvas] = useState(0);
-  const [Image, setImage] = useState(null);
+  const [textDropAreaRef, setTextDropAreaRef] = useState("Drag & Drop To Upload File");
   const [removeWhatColor, setRemoveWhatColor] = useState({
     red1: 240,
     green1: 240,
     blue1: 240,
-
     red2: 255,
     green2: 255,
     blue2: 255,
   });
 
+  // ----- Drag & Drop Image -----
   const dragOver = (e) => {
     e.preventDefault();
     dropAreaRef.current.style.background = "rgb(150, 50, 150)";
-    textDropAreaRef.current.textContent = "Drop Image";
+    setTextDropAreaRef("Drop Image");
   };
   const dragLeave = (e) => {
     e.preventDefault();
     dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
-    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
+    setTextDropAreaRef("Drag & Drop To Upload File");
   };
   const fileDrop = (e) => {
     e.preventDefault();
     dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
-    textDropAreaRef.current.textContent = "Drag & Drop To Upload File";
+    setTextDropAreaRef("Drag & Drop To Upload File");
     showFile(e.dataTransfer.files[0]);
   };
 
+  // ----- Browse File Button -----
   const browseFile = (e) => {
     e.preventDefault();
     showFile(e.target.files[0]);
   };
 
+  // ----- Show The File When They Drop The Image Or Select With The Button -----
   const showFile = (file) => {
     imgRef.current.name = file.name.split(".")[0];
     const fileType = file.type;
@@ -54,13 +56,21 @@ export const App = () => {
     }
   };
 
-  const handleClick = () => {
+  // ----- Choose Color -----
+  const changeColor = (e) => {
+    if (!isNaN(e.target.value)) {
+      setRemoveWhatColor({
+        ...removeWhatColor,
+        [e.target.name]: e.target.value,
+      });
+    }
+  };
+
+  // ----- Remove Background Button -----
+  const removeBackground = () => {
     setwidthCanvas(imgRef.current.naturalWidth);
     setheightCanvas(imgRef.current.naturalHeight);
     setTimeout(() => removeBackground());
-  };
-
-  const removeBackground = () => {
     const img = imgRef.current;
     const canvas = canvasRef.current;
     if (img && canvas) {
@@ -85,6 +95,7 @@ export const App = () => {
     }
   };
 
+  // ----- Download Image Button-----
   const downloadImage = () => {
     const canvas = canvasRef.current;
     const link = document.createElement("a");
@@ -93,24 +104,13 @@ export const App = () => {
     link.click();
   };
 
-  const changeColor = (e) => {
-    if (!isNaN(e.target.value)) {
-      setRemoveWhatColor({
-        ...removeWhatColor,
-        [e.target.name]: e.target.value,
-      });
-    }
-  };
-
   return (
-    <div className="container-all">
-      <div className="container-app border-radius-5 mt-10">
-        <div className="container-drop text-center unselectable" ref={dropAreaRef} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={fileDrop}>
+    <div className="bg-rgb-170-190-210 flex justify-center align-items-center flex-column">
+      <div className="w-full max-w-530 outline-5 bg-rgb-50-50-50 border-radius-5 mt-10 unselectable">
+        <div className="bg-linear-black-violet p-10 text-center" ref={dropAreaRef} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={fileDrop}>
           <div className="w-50 mx-auto mb-10">
             <div className="upload-file" />
-            <h3 className="text-white" ref={textDropAreaRef}>
-              Drag & Drop To Upload File
-            </h3>
+            <h3 className="text-white">{textDropAreaRef}</h3>
             <h3 className="text-white mb-10">Or</h3>
             <label>
               <input className="d-none" onChange={browseFile} type="file" placeholder="hola" />
@@ -119,12 +119,12 @@ export const App = () => {
           </div>
         </div>
 
-        <div className="container-images">
-          <img className="max-w-full max-h-200 flex mx-auto" ref={imgRef} src={Image}></img>
-          <canvas className="max-w-full max-h-200 flex mx-auto" ref={canvasRef} width={widthCanvas} height={heightCanvas}></canvas>
+        <div className="bg-transparent-img">
+          <img className="max-w-full max-h-200 flex mx-auto py-5" ref={imgRef} src={Image}></img>
+          <canvas className="max-w-full max-h-200 flex mx-auto py-5" ref={canvasRef} width={widthCanvas} height={heightCanvas}></canvas>
         </div>
 
-        <div className="container-choose-color text-white text-center">
+        <div className="flex flex-column bg-rgb-50-50-50 p-10 text-white text-center">
           <h3>Choose color range you want to remove</h3>
           <div className="flex justify-center">
             <ul className="w-full">
@@ -198,8 +198,8 @@ export const App = () => {
           </div>
         </div>
 
-        <div className="container-buttons">
-          <button className="btn" onClick={handleClick}>
+        <div className="flex bg-rgb-50-50-50">
+          <button className="btn" onClick={removeBackground}>
             Remove Background
           </button>
           {widthCanvas !== 0 && (
@@ -209,9 +209,13 @@ export const App = () => {
           )}
         </div>
       </div>
-      <footer className="footer">
-        <p className="footer-p">Made by:</p>
-        <a className="footer-a" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">
+      <footer className="flex py-15 mb-10">
+        <p>Made by:</p>
+        <a
+          className="hover_color-black color-rgba-0-0-0-06 hover_color-black text-decoration-none"
+          href="https://www.linkedin.com/in/giulianoconti/"
+          target="_blank"
+        >
           Giuliano Conti
         </a>
       </footer>

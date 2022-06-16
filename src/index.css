@@ -12,13 +12,12 @@ body {
 
 /* -------------- Container All -------------- */
 
-.container-all {
-  align-items: center;
+.bg-rgb-170-190-210 {
   background-color: rgb(170, 190, 210);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100vw;
+}
+
+.align-items-center {
+  align-items: center;
 }
 
 .mt-10 {
@@ -27,18 +26,18 @@ body {
 
 /* -------------- Container App -------------- */
 
-.container-app {
-  background-color: rgb(50, 50, 50);
+.outline-5 {
   outline: 5px solid black;
-  width: 100%;
+}
+
+.max-w-530 {
   max-width: 530px;
 }
 
 /* -------------- Container Drop -------------- */
 
-.container-drop {
+.bg-linear-black-violet {
   background: linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150));
-  padding: 20px;
 }
 
 .unselectable {
@@ -71,9 +70,8 @@ body {
 
 /* -------------- Container Images -------------- */
 
-.container-images {
+.bg-transparent-img {
   background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("/imgs/bgpng.png");
-  padding: 10px;
 }
 
 .max-h-200 {
@@ -90,10 +88,15 @@ body {
 
 /* -------------- Container Choose Color -------------- */
 
-.container-choose-color {
+.bg-rgb-50-50-50 {
   background-color: rgb(50, 50, 50);
+}
+
+.p-10 {
   padding: 10px;
-  display: flex;
+}
+
+.flex-column {
   flex-direction: column;
 }
 
@@ -171,11 +174,6 @@ body {
 
 /* -------------- Container Buttons -------------- */
 
-.container-buttons {
-  background-color: rgb(50, 50, 50);
-  display: flex;
-}
-
 .btn {
   background-color: rgb(255, 255, 255);
   border-radius: 5px;
@@ -193,36 +191,24 @@ body {
 
 /* -------------- Footer -------------- */
 
-.footer {
-  align-items: center;
-  border-top: 1px solid rgb(0, 0, 0);
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  margin-top: 10px;
-  padding-top: 10px;
-  width: 100%;
+.py-15 {
+  padding: 15px 0;
 }
 
-.footer-p {
-  margin: 0;
-}
-
-.footer-a {
+.color-rgba-0-0-0-06 {
   color: rgba(0, 0, 0, 0.6);
-  text-decoration: none;
 }
-.footer-a:hover {
-  color: rgb(0, 0, 0);
+
+.text-decoration-none {
   text-decoration: none;
 }
 
-@media screen and (max-width: 600px) {
-  .container-app {
-    max-width: 100%;
-  }
+.hover_color-black:hover {
+  color: rgb(0, 0, 0);
+}
+
+@media screen and (max-width: 535px) {
   .mt-10 {
     margin-top: 0;
   }
 }
-  
