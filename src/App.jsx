@@ -45,7 +45,18 @@ export const App = () => {
   const showFile = (file) => {
     imgRef.current.name = file.name.split(".")[0];
     const fileType = file.type;
-    const validExtensions = ["image/"];
+    const validExtensions = [
+      "image/apng",
+      "image/avif",
+      "image/gif",
+      "image/jpeg",
+      "image/png",
+      "image/svg+xml",
+      "image/webp",
+      "image/bmp",
+      "image/x-icon",
+      "image/tiff",
+    ];
     if (validExtensions.includes(fileType)) {
       const fileReader = new FileReader();
       fileReader.onload = () => {
