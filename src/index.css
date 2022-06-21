@@ -181,7 +181,7 @@ body {
   opacity: 0.5;
 }
 
-.input-range:focus {
+.input-range:active {
   opacity: 1;
 }
 
