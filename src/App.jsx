@@ -45,7 +45,7 @@ export const App = () => {
   const showFile = (file) => {
     imgRef.current.name = file.name.split(".")[0];
     const fileType = file.type;
-    const validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+    const validExtensions = ["image/"];
     if (validExtensions.includes(fileType)) {
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -57,11 +57,11 @@ export const App = () => {
   };
 
   // ----- Choose Color -----
-  const changeColor = (e) => {
-    if (!isNaN(e.target.value)) {
+  const changeColor = ({ target: { value, name } }) => {
+    if (!isNaN(value) && value >= 0 && value <= 255) {
       setRemoveWhatColor({
         ...removeWhatColor,
-        [e.target.name]: e.target.value,
+        [name]: value,
       });
     }
   };
@@ -126,35 +126,44 @@ export const App = () => {
         </div>
 
         <div className="flex flex-column bg-rgb-50-50-50 p-10 text-white text-center">
-          <h3>Choose color range you want to remove</h3>
+          <h3 className="mb-10">Choose color range you want to remove</h3>
           <div className="flex justify-center">
             <ul className="w-full">
               <li className="style-type-none">
-                <h5>Red</h5>
-                <input
-                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
-                  name="red1"
-                  value={removeWhatColor.red1}
-                  onChange={changeColor}
-                />
+                <div className="flex align-items-center">
+                  <h5 className="bg-red border-radius-5 py-5 w-full mr-10">Red</h5>
+                  <input
+                    className="border-radius-5 outline-none py-5 w-full focus_outline-black text-center"
+                    name="red1"
+                    value={removeWhatColor.red1}
+                    onChange={changeColor}
+                  />
+                </div>
+                <input className="input-range bg-red mb-20" type="range" name="red1" min="0" max="255" value={removeWhatColor.red1} onChange={changeColor} />
               </li>
               <li className="style-type-none">
-                <h5>Green</h5>
-                <input
-                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
-                  name="green1"
-                  value={removeWhatColor.green1}
-                  onChange={changeColor}
-                />
+                <div className="flex align-items-center">
+                  <h5 className="bg-green border-radius-5 py-5 w-full mr-10">Green</h5>
+                  <input
+                    className="border-radius-5 outline-none py-5 w-full focus_outline-black text-center"
+                    name="green1"
+                    value={removeWhatColor.green1}
+                    onChange={changeColor}
+                  />
+                </div>
+                <input className="input-range bg-green mb-20" type="range" name="green1" min="0" max="255" value={removeWhatColor.green1} onChange={changeColor} />
               </li>
               <li className="style-type-none">
-                <h5>Blue</h5>
-                <input
-                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
-                  name="blue1"
-                  value={removeWhatColor.blue1}
-                  onChange={changeColor}
-                />
+                <div className="flex align-items-center">
+                  <h5 className="bg-blue border-radius-5 py-5 w-full mr-10">Blue</h5>
+                  <input
+                    className="border-radius-5 outline-none py-5 w-full focus_outline-black text-center"
+                    name="blue1"
+                    value={removeWhatColor.blue1}
+                    onChange={changeColor}
+                  />
+                </div>
+                <input className="input-range bg-blue" type="range" name="blue1" min="0" max="255" value={removeWhatColor.blue1} onChange={changeColor} />
               </li>
             </ul>
 
@@ -169,31 +178,40 @@ export const App = () => {
 
             <ul className="w-full">
               <li className="style-type-none">
-                <h5>Red</h5>
-                <input
-                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
-                  name="red2"
-                  value={removeWhatColor.red2}
-                  onChange={changeColor}
-                />
+                <div className="flex align-items-center">
+                  <h5 className="bg-red border-radius-5 py-5 w-full mr-10">Red</h5>
+                  <input
+                    className="border-radius-5 outline-none py-5 w-full focus_outline-black text-center"
+                    name="red2"
+                    value={removeWhatColor.red2}
+                    onChange={changeColor}
+                  />
+                </div>
+                <input className="input-range bg-red mb-20" type="range" name="red2" min="0" max="255" value={removeWhatColor.red2} onChange={changeColor} />
               </li>
               <li className="style-type-none">
-                <h5>Green</h5>
-                <input
-                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
-                  name="green2"
-                  value={removeWhatColor.green2}
-                  onChange={changeColor}
-                />
+                <div className="flex align-items-center">
+                  <h5 className="bg-green border-radius-5 py-5 w-full mr-10">Green</h5>
+                  <input
+                    className="border-radius-5 outline-none py-5 w-full focus_outline-black text-center"
+                    name="green2"
+                    value={removeWhatColor.green2}
+                    onChange={changeColor}
+                  />
+                </div>
+                <input className="input-range bg-green mb-20" type="range" name="green2" min="0" max="255" value={removeWhatColor.green2} onChange={changeColor} />
               </li>
               <li className="style-type-none">
-                <h5>Blue</h5>
-                <input
-                  className="border-radius-5 outline-none py-5 w-full mb-10 focus_outline-black text-center"
-                  name="blue2"
-                  value={removeWhatColor.blue2}
-                  onChange={changeColor}
-                />
+                <div className="flex align-items-center">
+                  <h5 className="bg-blue border-radius-5 py-5 w-full mr-10">Blue</h5>
+                  <input
+                    className="border-radius-5 outline-none py-5 w-full focus_outline-black text-center"
+                    name="blue2"
+                    value={removeWhatColor.blue2}
+                    onChange={changeColor}
+                  />
+                </div>
+                <input className="input-range bg-blue" type="range" name="blue2" min="0" max="255" value={removeWhatColor.blue2} onChange={changeColor} />
               </li>
             </ul>
           </div>
@@ -212,11 +230,7 @@ export const App = () => {
       </div>
       <footer className="flex py-15 mb-10">
         <p>Made by:</p>
-        <a
-          className="hover_color-black color-rgba-0-0-0-06 hover_color-black text-decoration-none"
-          href="https://www.linkedin.com/in/giulianoconti/"
-          target="_blank"
-        >
+        <a className="hover_color-black color-rgba-0-0-0-06 hover_color-black text-decoration-none" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">
           Giuliano Conti
         </a>
       </footer>
