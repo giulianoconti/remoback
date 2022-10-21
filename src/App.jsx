@@ -25,6 +25,7 @@ export const App = () => {
   const [widthCanvasImg, setWidthCanvasImg] = useState(530);
   const [saveFileURL, setSaveFileURL] = useState("");
   const [showDownloadButton, setShowDownloadButton] = useState(false);
+  const [fileType, setFileType] = useState("png");
   const { widthWindow } = useWindowDimensions();
 
   useEffect(() => {
@@ -169,9 +170,13 @@ export const App = () => {
   const downloadImage = () => {
     const canvas = canvasRef.current;
     const link = document.createElement("a");
-    link.download = imgRef.current.name + "-RemovedBG.png";
-    link.href = canvas.toDataURL("image/png");
+    link.download = imgRef.current.name + "-RemovedBG." + fileType;
+    link.href = canvas.toDataURL("image/" + fileType);
     link.click();
+  };
+
+  const downloadImageWith = (e) => {
+    setFileType(e.target.value);
   };
 
   const handleStopGetPixel = () => setStopGetPixel(!stopGetPixel);
@@ -230,9 +235,16 @@ export const App = () => {
             Remove Background
           </button>
           {showDownloadButton && (
-            <button className="btn" onClick={downloadImage}>
-              Download Image
-            </button>
+            <>
+              <button className="btn" onClick={downloadImage}>
+                Download Image
+              </button>
+              <select className="btn" onChange={downloadImageWith}>
+                <option value="png">Png</option>
+                <option value="webp">Webp</option>
+                <option value="jpg">Jpg</option>
+              </select>
+            </>
           )}
         </div>
       </div>
