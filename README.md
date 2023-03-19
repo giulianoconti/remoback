@@ -20,4 +20,4 @@ The application allows you to download the image in different formats.
 
 ### Link
 
-* https://remoback.vercel.app/
+https://remoback.vercel.app/
