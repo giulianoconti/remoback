@@ -18,4 +18,4 @@ The application allows you to download the image in different formats.
 
 ### Link
 
-* https://remove-background-react-giulianoconti.vercel.app/
+* https://remoback.vercel.app/
