@@ -49,60 +49,46 @@ export const App = () => {
     e.preventDefault();
     dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
     setTextDropAreaRef("Drag & Drop To Upload File");
-    showFile(e.dataTransfer.files[0]);
+    showFiles(e.dataTransfer.files);
   };
 
   // ----- Browse File Button -----
   const browseFile = (e) => {
     e.preventDefault();
-    showFile(e.target.files[0]);
+    showFiles(e.target.files);
   };
 
-  // ----- Show The File When They Drop The Image Or Select With The Button -----
-  const showFile = (file) => {
-    setShowDownloadButton(false);
-    imgRef.current.name = file.name.split(".")[0];
-    const fileType = file.type;
-    const validExtensions = [
-      "image/apng",
-      "image/avif",
-      "image/gif",
-      "image/jpeg",
-      "image/png",
-      "image/svg+xml",
-      "image/webp",
-      "image/bmp",
-      "image/x-icon",
-      "image/tiff",
-    ];
-    if (validExtensions.includes(fileType)) {
+  // ----- Load Every Selected/Dropped File -----
+  const validExtensions = [
+    "image/apng",
+    "image/avif",
+    "image/gif",
+    "image/jpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/webp",
+    "image/bmp",
+    "image/x-icon",
+    "image/tiff",
+  ];
+
+  const showFiles = (fileList) => {
+    Array.from(fileList).forEach((file) => {
+      if (!validExtensions.includes(file.type)) return;
       const fileReader = new FileReader();
       fileReader.onload = () => {
-        const fileURL = fileReader.result;
-        setSaveFileURL(fileURL);
-        setImage(fileURL);
-        loadImageInCanvas(fileURL);
+        setImages((prev) => [
+          ...prev,
+          {
+            id: nextImageId++,
+            name: file.name.split(".")[0],
+            originalURL: fileReader.result,
+            processed: false,
+          },
+        ]);
       };
       fileReader.readAsDataURL(file);
-    }
-  };
-
-  const loadImageInCanvas = (fileURL) => {
-    const canvasOriginalImg = canvasImgRef.current;
-    const ctx = canvasOriginalImg.getContext("2d");
-    const img = new Image();
-    img.src = fileURL;
-    img.onload = () => {
-      if (imgRef.current.naturalWidth >= 530) {
-        canvasOriginalImg.width = widthCanvasImg;
-        canvasOriginalImg.height = (imgRef.current.naturalHeight / imgRef.current.naturalWidth) * widthCanvasImg;
-        ctx.drawImage(img, 0, 0, widthCanvasImg, (imgRef.current.naturalHeight / imgRef.current.naturalWidth) * widthCanvasImg);
-      } else {
-        canvasOriginalImg.width = imgRef.current.naturalWidth;
-        canvasOriginalImg.height = imgRef.current.naturalHeight;
-        ctx.drawImage(img, 0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      }
-    };
+    });
   };
 
   const getPixel = (e) => {
@@ -186,7 +172,7 @@ export const App = () => {
             <h3 className="text-white">{textDropAreaRef}</h3>
             <h3 className="text-white mb-10">Or</h3>
             <label>
-              <input className="d-none" onChange={browseFile} type="file" placeholder="hola" />
+              <input className="d-none" onChange={browseFile} type="file" multiple accept="image/*" />
               <span className="btn">Browse File</span>
             </label>
           </div>
