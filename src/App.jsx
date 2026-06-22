@@ -1,18 +1,18 @@
-import { useEffect } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import JSZip from "jszip";
 import { ChooseColorColorItem } from "./components/ChooseColorColorItem";
 import { ChooseColorRangeItem } from "./components/ChooseColorRangeItem";
 import { Footer } from "./components/Footer";
+import { ImageCard } from "./components/ImageCard";
 import { useWindowDimensions } from "./hooks/useWindowDimensions";
 
+let nextImageId = 0;
+
 export const App = () => {
-  const imgRef = useRef(null);
-  const canvasRef = useRef(null);
   const dropAreaRef = useRef(null);
-  const canvasImgRef = useRef(null);
+  const cardRefs = useRef({}); // { [imageId]: ImageCard ref }
   const [colorMouseMove, setColorMouseMove] = useState(null);
-  const [stopGetPixel, setStopGetPixel] = useState(true);
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]); // [{ id, name, originalURL, processed }]
   const [textDropAreaRef, setTextDropAreaRef] = useState("Drag & Drop To Upload File");
   const [removeWhatColor, setRemoveWhatColor] = useState({
     red1: 240,
@@ -23,18 +23,14 @@ export const App = () => {
     blue2: 255,
   });
   const [widthCanvasImg, setWidthCanvasImg] = useState(530);
-  const [saveFileURL, setSaveFileURL] = useState("");
-  const [showDownloadButton, setShowDownloadButton] = useState(false);
   const [fileType, setFileType] = useState("png");
   const { widthWindow } = useWindowDimensions();
 
   useEffect(() => {
     if (widthWindow < 530) {
       setWidthCanvasImg(widthWindow - 1);
-      loadImageInCanvas(saveFileURL);
     } else if (widthWindow >= 530 && widthWindow < 560) {
       setWidthCanvasImg(530);
-      loadImageInCanvas(saveFileURL);
     }
   }, [widthWindow]);
 
