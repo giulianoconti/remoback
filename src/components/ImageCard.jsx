@@ -39,6 +39,7 @@ export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPi
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor(e.clientX - rect.left);
     const y = Math.floor(e.clientY - rect.top);
+    if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
     const data = ctx.getImageData(x, y, 1, 1).data;
     onPixelPick(`rgb(${data[0]}, ${data[1]}, ${data[2]})`);
   };
