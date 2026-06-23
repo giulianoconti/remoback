@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
-export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPixelPick, widthCanvasImg }, ref) {
+export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPixelPick, widthCanvasImg, processed }, ref) {
   const imgRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -14,8 +14,8 @@ export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPi
   }, [originalURL]);
 
   useEffect(() => {
-    if (imgRef.current) drawAtWidth(widthCanvasImg);
-  }, [widthCanvasImg]);
+    if (imgRef.current && !processed) drawAtWidth(widthCanvasImg);
+  }, [widthCanvasImg, processed]);
 
   const drawAtWidth = (targetWidth) => {
     const img = imgRef.current;
@@ -29,7 +29,6 @@ export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPi
   };
 
   useImperativeHandle(ref, () => ({
-    getNaturalImage: () => imgRef.current,
     getCanvas: () => canvasRef.current,
   }));
 

@@ -182,6 +182,7 @@ export const App = () => {
                 originalURL={image.originalURL}
                 name={image.name}
                 widthCanvasImg={widthCanvasImg}
+                processed={image.processed}
                 onPixelPick={setColorMouseMove}
               />
             ))}
