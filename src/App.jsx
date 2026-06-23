@@ -122,12 +122,14 @@ export const App = () => {
   };
 
   const removeBackground = () => {
+    const processedIds = new Set();
     images.forEach((image) => {
       const card = cardRefs.current[image.id];
       if (!card) return;
       removeBackgroundFromCanvas(card.getCanvas());
+      processedIds.add(image.id);
     });
-    setImages((prev) => prev.map((image) => ({ ...image, processed: true })));
+    setImages((prev) => prev.map((image) => (processedIds.has(image.id) ? { ...image, processed: true } : image)));
   };
 
   // ----- Download Image Button-----
