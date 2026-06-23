@@ -127,6 +127,7 @@ export const App = () => {
       const card = cardRefs.current[image.id];
       if (!card) return;
       removeBackgroundFromCanvas(card.getCanvas());
+      card.refreshPreview();
       processedIds.add(image.id);
     });
     setImages((prev) => prev.map((image) => (processedIds.has(image.id) ? { ...image, processed: true } : image)));
@@ -182,7 +183,6 @@ export const App = () => {
                 originalURL={image.originalURL}
                 name={image.name}
                 widthCanvasImg={widthCanvasImg}
-                processed={image.processed}
                 onPixelPick={setColorMouseMove}
               />
             ))}
