@@ -140,6 +140,7 @@ export const App = () => {
       if (!card) continue;
       const canvas = card.getCanvas();
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/" + fileType));
+      if (!blob) continue;
       zip.file(`${image.name}-RemovedBG.${fileType}`, blob);
     }
     const zipBlob = await zip.generateAsync({ type: "blob" });
