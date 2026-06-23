@@ -132,13 +132,22 @@ export const App = () => {
     setImages((prev) => prev.map((image) => (processedIds.has(image.id) ? { ...image, processed: true } : image)));
   };
 
-  // ----- Download Image Button-----
-  const downloadImage = () => {
-    const canvas = canvasRef.current;
+  // ----- Download All Button -----
+  const downloadAll = async () => {
+    const zip = new JSZip();
+    for (const image of images) {
+      const card = cardRefs.current[image.id];
+      if (!card) continue;
+      const canvas = card.getCanvas();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/" + fileType));
+      zip.file(`${image.name}-RemovedBG.${fileType}`, blob);
+    }
+    const zipBlob = await zip.generateAsync({ type: "blob" });
     const link = document.createElement("a");
-    link.download = imgRef.current.name + "-RemovedBG." + fileType;
-    link.href = canvas.toDataURL("image/" + fileType);
+    link.download = "images.zip";
+    link.href = URL.createObjectURL(zipBlob);
     link.click();
+    URL.revokeObjectURL(link.href);
   };
 
   const downloadImageWith = (e) => {
@@ -202,8 +211,8 @@ export const App = () => {
           </button>
           {images.some((image) => image.processed) && (
             <>
-              <button className="btn" onClick={downloadImage}>
-                Download Image
+              <button className="btn" onClick={downloadAll}>
+                Download All
               </button>
               <select className="btn" onChange={downloadImageWith}>
                 <option value="png">Png</option>
