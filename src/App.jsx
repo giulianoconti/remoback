@@ -1,18 +1,18 @@
-import { useEffect } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import JSZip from "jszip";
 import { ChooseColorColorItem } from "./components/ChooseColorColorItem";
 import { ChooseColorRangeItem } from "./components/ChooseColorRangeItem";
 import { Footer } from "./components/Footer";
+import { ImageCard } from "./components/ImageCard";
 import { useWindowDimensions } from "./hooks/useWindowDimensions";
 
+let nextImageId = 0;
+
 export const App = () => {
-  const imgRef = useRef(null);
-  const canvasRef = useRef(null);
   const dropAreaRef = useRef(null);
-  const canvasImgRef = useRef(null);
+  const cardRefs = useRef({}); // { [imageId]: ImageCard ref }
   const [colorMouseMove, setColorMouseMove] = useState(null);
-  const [stopGetPixel, setStopGetPixel] = useState(true);
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]); // [{ id, name, originalURL, processed }]
   const [textDropAreaRef, setTextDropAreaRef] = useState("Drag & Drop To Upload File");
   const [removeWhatColor, setRemoveWhatColor] = useState({
     red1: 240,
@@ -23,18 +23,14 @@ export const App = () => {
     blue2: 255,
   });
   const [widthCanvasImg, setWidthCanvasImg] = useState(530);
-  const [saveFileURL, setSaveFileURL] = useState("");
-  const [showDownloadButton, setShowDownloadButton] = useState(false);
   const [fileType, setFileType] = useState("png");
   const { widthWindow } = useWindowDimensions();
 
   useEffect(() => {
     if (widthWindow < 530) {
       setWidthCanvasImg(widthWindow - 1);
-      loadImageInCanvas(saveFileURL);
     } else if (widthWindow >= 530 && widthWindow < 560) {
       setWidthCanvasImg(530);
-      loadImageInCanvas(saveFileURL);
     }
   }, [widthWindow]);
 
@@ -53,78 +49,46 @@ export const App = () => {
     e.preventDefault();
     dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
     setTextDropAreaRef("Drag & Drop To Upload File");
-    showFile(e.dataTransfer.files[0]);
+    showFiles(e.dataTransfer.files);
   };
 
   // ----- Browse File Button -----
   const browseFile = (e) => {
     e.preventDefault();
-    showFile(e.target.files[0]);
+    showFiles(e.target.files);
   };
 
-  // ----- Show The File When They Drop The Image Or Select With The Button -----
-  const showFile = (file) => {
-    setShowDownloadButton(false);
-    imgRef.current.name = file.name.split(".")[0];
-    const fileType = file.type;
-    const validExtensions = [
-      "image/apng",
-      "image/avif",
-      "image/gif",
-      "image/jpeg",
-      "image/png",
-      "image/svg+xml",
-      "image/webp",
-      "image/bmp",
-      "image/x-icon",
-      "image/tiff",
-    ];
-    if (validExtensions.includes(fileType)) {
+  // ----- Load Every Selected/Dropped File -----
+  const validExtensions = [
+    "image/apng",
+    "image/avif",
+    "image/gif",
+    "image/jpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/webp",
+    "image/bmp",
+    "image/x-icon",
+    "image/tiff",
+  ];
+
+  const showFiles = (fileList) => {
+    Array.from(fileList).forEach((file) => {
+      if (!validExtensions.includes(file.type)) return;
       const fileReader = new FileReader();
       fileReader.onload = () => {
-        const fileURL = fileReader.result;
-        setSaveFileURL(fileURL);
-        setImage(fileURL);
-        loadImageInCanvas(fileURL);
+        setImages((prev) => [
+          ...prev,
+          {
+            id: nextImageId++,
+            name: file.name.split(".")[0],
+            originalURL: fileReader.result,
+            processed: false,
+          },
+        ]);
       };
       fileReader.readAsDataURL(file);
-    }
-  };
-
-  const loadImageInCanvas = (fileURL) => {
-    const canvasOriginalImg = canvasImgRef.current;
-    const ctx = canvasOriginalImg.getContext("2d");
-    const img = new Image();
-    img.src = fileURL;
-    img.onload = () => {
-      if (imgRef.current.naturalWidth >= 530) {
-        canvasOriginalImg.width = widthCanvasImg;
-        canvasOriginalImg.height = (imgRef.current.naturalHeight / imgRef.current.naturalWidth) * widthCanvasImg;
-        ctx.drawImage(img, 0, 0, widthCanvasImg, (imgRef.current.naturalHeight / imgRef.current.naturalWidth) * widthCanvasImg);
-      } else {
-        canvasOriginalImg.width = imgRef.current.naturalWidth;
-        canvasOriginalImg.height = imgRef.current.naturalHeight;
-        ctx.drawImage(img, 0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      }
-    };
-  };
-
-  const getPixel = (e) => {
-    if (!stopGetPixel) {
-      const canvas = canvasImgRef.current;
-      const ctx = canvas.getContext("2d");
-      const { clientX, clientY } = e;
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor(clientX - rect.left);
-      const y = Math.floor(clientY - rect.top);
-      const imageData = ctx.getImageData(x, y, 1, 1);
-      const data = imageData.data;
-      const red = data[0];
-      const green = data[1];
-      const blue = data[2];
-      const color = `rgb(${red}, ${green}, ${blue})`;
-      setColorMouseMove(color);
-    }
+    });
   };
 
   // ----- Choose Color -----
@@ -138,48 +102,59 @@ export const App = () => {
   };
 
   // ----- Remove Background Button -----
-  const removeBackground = () => {
-    const img = imgRef.current;
-    const canvas = canvasRef.current;
-    if (img.src) {
-      canvas.width = imgRef.current.naturalWidth;
-      canvas.height = imgRef.current.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      const imageData = ctx.getImageData(0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      const data = imageData.data;
-      const newColor = { r: 0, g: 0, b: 0, a: 0 };
-      for (let i = 0; i < data.length; i += 4) {
-        if (
-          data[i] >= removeWhatColor.red1 &&
-          data[i] <= removeWhatColor.red2 &&
-          data[i + 1] >= removeWhatColor.green1 &&
-          data[i + 1] <= removeWhatColor.green2 &&
-          data[i + 2] >= removeWhatColor.blue1 &&
-          data[i + 2] <= removeWhatColor.blue2
-        ) {
-          data[i + 3] = newColor.a;
-        }
+  const removeBackgroundFromCanvas = (canvas) => {
+    const ctx = canvas.getContext("2d");
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (
+        data[i] >= removeWhatColor.red1 &&
+        data[i] <= removeWhatColor.red2 &&
+        data[i + 1] >= removeWhatColor.green1 &&
+        data[i + 1] <= removeWhatColor.green2 &&
+        data[i + 2] >= removeWhatColor.blue1 &&
+        data[i + 2] <= removeWhatColor.blue2
+      ) {
+        data[i + 3] = 0;
       }
-      ctx.putImageData(imageData, 0, 0);
-      setShowDownloadButton(true);
     }
+    ctx.putImageData(imageData, 0, 0);
   };
 
-  // ----- Download Image Button-----
-  const downloadImage = () => {
-    const canvas = canvasRef.current;
+  const removeBackground = () => {
+    const processedIds = new Set();
+    images.forEach((image) => {
+      const card = cardRefs.current[image.id];
+      if (!card) return;
+      removeBackgroundFromCanvas(card.getCanvas());
+      card.refreshPreview();
+      processedIds.add(image.id);
+    });
+    setImages((prev) => prev.map((image) => (processedIds.has(image.id) ? { ...image, processed: true } : image)));
+  };
+
+  // ----- Download All Button -----
+  const downloadAll = async () => {
+    const zip = new JSZip();
+    for (const image of images) {
+      const card = cardRefs.current[image.id];
+      if (!card) continue;
+      const canvas = card.getCanvas();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/" + fileType));
+      if (!blob) continue;
+      zip.file(`${image.name}-RemovedBG.${fileType}`, blob);
+    }
+    const zipBlob = await zip.generateAsync({ type: "blob" });
     const link = document.createElement("a");
-    link.download = imgRef.current.name + "-RemovedBG." + fileType;
-    link.href = canvas.toDataURL("image/" + fileType);
+    link.download = "images.zip";
+    link.href = URL.createObjectURL(zipBlob);
     link.click();
+    URL.revokeObjectURL(link.href);
   };
 
   const downloadImageWith = (e) => {
     setFileType(e.target.value);
   };
-
-  const handleStopGetPixel = () => setStopGetPixel(!stopGetPixel);
 
   return (
     <div className="bg-rgb-170-190-210 flex justify-center align-items-center flex-column">
@@ -190,26 +165,28 @@ export const App = () => {
             <h3 className="text-white">{textDropAreaRef}</h3>
             <h3 className="text-white mb-10">Or</h3>
             <label>
-              <input className="d-none" onChange={browseFile} type="file" placeholder="hola" />
+              <input className="d-none" onChange={browseFile} type="file" multiple accept="image/*" />
               <span className="btn">Browse File</span>
             </label>
           </div>
         </div>
 
         <div className="bg-transparent-img">
-          <img className="invisible" ref={imgRef} src={image} />
-          <canvas
-            className="flex mx-auto mouse-crosshair mb-10"
-            width={widthCanvasImg}
-            height={0}
-            ref={canvasImgRef}
-            onClick={handleStopGetPixel}
-            onMouseMove={getPixel}
-          ></canvas>
           <h3 className="text-center mx-auto text-shadow py-5" style={{ backgroundColor: `${colorMouseMove ? colorMouseMove : "rgba(255, 255, 255)"}` }}>
             {colorMouseMove ? colorMouseMove : "Click on the image to get the color"}
           </h3>
-          <canvas className="max-w-full flex mx-auto py-10" height={0} ref={canvasRef}></canvas>
+          <div className="flex flex-wrap justify-center">
+            {images.map((image) => (
+              <ImageCard
+                key={image.id}
+                ref={(el) => (cardRefs.current[image.id] = el)}
+                originalURL={image.originalURL}
+                name={image.name}
+                widthCanvasImg={widthCanvasImg}
+                onPixelPick={setColorMouseMove}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-column bg-rgb-50-50-50 p-10 text-white text-center">
@@ -234,10 +211,10 @@ export const App = () => {
           <button className="btn" onClick={removeBackground}>
             Remove Background
           </button>
-          {showDownloadButton && (
+          {images.some((image) => image.processed) && (
             <>
-              <button className="btn" onClick={downloadImage}>
-                Download Image
+              <button className="btn" onClick={downloadAll}>
+                Download All
               </button>
               <select className="btn" onChange={downloadImageWith}>
                 <option value="png">Png</option>
