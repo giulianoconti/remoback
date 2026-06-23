@@ -1,18 +1,19 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
-export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPixelPick, widthCanvasImg }, ref) {
+const MAX_PREVIEW_DIMENSION = 800;
+
+export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPixelPick, processed }, ref) {
   const imgRef = useRef(null);
   const fullCanvasRef = useRef(null);
   const displayCanvasRef = useRef(null);
 
-  const refreshPreview = (targetWidth) => {
+  const refreshPreview = () => {
     const fullCanvas = fullCanvasRef.current;
     const displayCanvas = displayCanvasRef.current;
-    const useWidth = fullCanvas.width >= targetWidth ? targetWidth : fullCanvas.width;
-    const useHeight = (fullCanvas.height / fullCanvas.width) * useWidth;
-    displayCanvas.width = useWidth;
-    displayCanvas.height = useHeight;
-    displayCanvas.getContext("2d").drawImage(fullCanvas, 0, 0, useWidth, useHeight);
+    const scale = Math.min(1, MAX_PREVIEW_DIMENSION / Math.max(fullCanvas.width, fullCanvas.height));
+    displayCanvas.width = Math.round(fullCanvas.width * scale);
+    displayCanvas.height = Math.round(fullCanvas.height * scale);
+    displayCanvas.getContext("2d").drawImage(fullCanvas, 0, 0, displayCanvas.width, displayCanvas.height);
   };
 
   useEffect(() => {
@@ -24,17 +25,13 @@ export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPi
       fullCanvas.width = img.naturalWidth;
       fullCanvas.height = img.naturalHeight;
       fullCanvas.getContext("2d").drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
-      refreshPreview(widthCanvasImg);
+      refreshPreview();
     };
   }, [originalURL]);
 
-  useEffect(() => {
-    if (imgRef.current) refreshPreview(widthCanvasImg);
-  }, [widthCanvasImg]);
-
   useImperativeHandle(ref, () => ({
     getCanvas: () => fullCanvasRef.current,
-    refreshPreview: () => refreshPreview(widthCanvasImg),
+    refreshPreview,
   }));
 
   const getPixel = (e) => {
@@ -49,12 +46,13 @@ export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPi
   };
 
   return (
-    <div className="bg-transparent-img p-5 m-5" style={{ display: "inline-block" }}>
-      <canvas ref={fullCanvasRef} style={{ display: "none" }} />
-      <canvas ref={displayCanvasRef} className="mouse-crosshair" onMouseMove={getPixel} />
-      <h4 className="text-white text-center" style={{ fontSize: "12px" }}>
-        {name}
-      </h4>
+    <div className="image-card">
+      {processed && <div className="image-card-badge">✓</div>}
+      <div className="image-card-thumb">
+        <canvas ref={fullCanvasRef} style={{ display: "none" }} />
+        <canvas ref={displayCanvasRef} className="mouse-crosshair image-card-canvas" onMouseMove={getPixel} />
+      </div>
+      <div className="image-card-name">{name}</div>
     </div>
   );
 });
