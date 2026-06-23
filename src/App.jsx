@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import JSZip from "jszip";
 import { ChooseColorColorItem } from "./components/ChooseColorColorItem";
 import { ChooseColorRangeItem } from "./components/ChooseColorRangeItem";
 import { Footer } from "./components/Footer";
 import { ImageCard } from "./components/ImageCard";
-import { useWindowDimensions } from "./hooks/useWindowDimensions";
 
 let nextImageId = 0;
 
@@ -22,32 +21,24 @@ export const App = () => {
     green2: 255,
     blue2: 255,
   });
-  const [widthCanvasImg, setWidthCanvasImg] = useState(530);
   const [fileType, setFileType] = useState("png");
-  const { widthWindow } = useWindowDimensions();
 
-  useEffect(() => {
-    if (widthWindow < 530) {
-      setWidthCanvasImg(widthWindow - 1);
-    } else if (widthWindow >= 530 && widthWindow < 560) {
-      setWidthCanvasImg(530);
-    }
-  }, [widthWindow]);
+  const hasImages = images.length > 0;
 
   // ----- Drag & Drop Image -----
   const dragOver = (e) => {
     e.preventDefault();
-    dropAreaRef.current.style.background = "rgb(150, 50, 150)";
+    dropAreaRef.current.style.filter = "brightness(0.92)";
     setTextDropAreaRef("Drop Image");
   };
   const dragLeave = (e) => {
     e.preventDefault();
-    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+    dropAreaRef.current.style.filter = "";
     setTextDropAreaRef("Drag & Drop To Upload File");
   };
   const fileDrop = (e) => {
     e.preventDefault();
-    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+    dropAreaRef.current.style.filter = "";
     setTextDropAreaRef("Drag & Drop To Upload File");
     showFiles(e.dataTransfer.files);
   };
@@ -146,49 +137,55 @@ export const App = () => {
   };
 
   return (
-    <div className="bg-rgb-170-190-210 flex justify-center align-items-center flex-column">
-      <div className="w-full max-w-530 outline-5 bg-rgb-50-50-50 border-radius-5 mt-10">
-        <div className="bg-linear-black-violet p-10 text-center unselectable" ref={dropAreaRef} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={fileDrop}>
-          <div className="w-50 mx-auto mb-10">
-            <div className="upload-file" />
-            <h3 className="text-white">{textDropAreaRef}</h3>
-            <h3 className="text-white mb-10">Or</h3>
-            <label>
-              <input className="d-none" onChange={browseFile} type="file" multiple accept="image/*" />
-              <span className="btn">Browse File</span>
-            </label>
-          </div>
+    <div className="app-shell">
+      <div className="app-container">
+        <div
+          className={`dropzone unselectable${hasImages ? " dropzone-compact" : ""}`}
+          ref={dropAreaRef}
+          onDragOver={dragOver}
+          onDragLeave={dragLeave}
+          onDrop={fileDrop}
+        >
+          {!hasImages && <div className="dropzone-icon" />}
+          {!hasImages && <div className="dropzone-title">{textDropAreaRef}</div>}
+          {!hasImages && <div className="dropzone-sub">o elegí un archivo</div>}
+          <label>
+            <input className="d-none" onChange={browseFile} type="file" multiple accept="image/*" />
+            <span className={hasImages ? "btn-add-more" : "btn-browse"}>{hasImages ? "+ Agregar más" : "Browse File"}</span>
+          </label>
         </div>
 
-        <div className="bg-transparent-img">
-          <h3 className="text-center mx-auto text-shadow py-5" style={{ backgroundColor: `${colorMouseMove ? colorMouseMove : "rgba(255, 255, 255)"}` }}>
-            {colorMouseMove ? colorMouseMove : "Click on the image to get the color"}
-          </h3>
-          <div className="flex flex-wrap justify-center">
-            {images.map((image) => (
-              <ImageCard
-                key={image.id}
-                ref={(el) => (cardRefs.current[image.id] = el)}
-                originalURL={image.originalURL}
-                name={image.name}
-                widthCanvasImg={widthCanvasImg}
-                onPixelPick={setColorMouseMove}
-              />
-            ))}
+        {hasImages && (
+          <div className="image-section">
+            <div className="color-readout" style={{ backgroundColor: colorMouseMove || "#ffffff" }}>
+              {colorMouseMove || "Tocá una imagen para ver su color"}
+            </div>
+            <div className="image-grid">
+              {images.map((image) => (
+                <ImageCard
+                  key={image.id}
+                  ref={(el) => (cardRefs.current[image.id] = el)}
+                  originalURL={image.originalURL}
+                  name={image.name}
+                  processed={image.processed}
+                  onPixelPick={setColorMouseMove}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="flex flex-column bg-rgb-50-50-50 p-10 text-white text-center">
-          <h3 className="mb-10">Choose color range you want to remove</h3>
-          <div className="flex justify-center">
-            <ul className="w-full">
+        <div className="color-panel">
+          <h3 className="color-panel-title">Choose color range you want to remove</h3>
+          <div className="color-panel-row">
+            <ul className="color-range-list">
               <ChooseColorRangeItem colorName={"Red"} name={"red1"} value={removeWhatColor.red1} onChange={changeColor} />
               <ChooseColorRangeItem colorName={"Green"} name={"green1"} value={removeWhatColor.green1} onChange={changeColor} />
               <ChooseColorRangeItem colorName={"Blue"} name={"blue1"} value={removeWhatColor.blue1} onChange={changeColor} />
             </ul>
-            <ChooseColorColorItem margin="l" removeWhatColor1={removeWhatColor.red1} removeWhatColor2={removeWhatColor.green1} removeWhatColor3={removeWhatColor.blue1} />
-            <ChooseColorColorItem margin="r" removeWhatColor1={removeWhatColor.red2} removeWhatColor2={removeWhatColor.green2} removeWhatColor3={removeWhatColor.blue2} />
-            <ul className="w-full">
+            <ChooseColorColorItem removeWhatColor1={removeWhatColor.red1} removeWhatColor2={removeWhatColor.green1} removeWhatColor3={removeWhatColor.blue1} />
+            <ChooseColorColorItem removeWhatColor1={removeWhatColor.red2} removeWhatColor2={removeWhatColor.green2} removeWhatColor3={removeWhatColor.blue2} />
+            <ul className="color-range-list">
               <ChooseColorRangeItem colorName={"Red"} name={"red2"} value={removeWhatColor.red2} onChange={changeColor} />
               <ChooseColorRangeItem colorName={"Green"} name={"green2"} value={removeWhatColor.green2} onChange={changeColor} />
               <ChooseColorRangeItem colorName={"Blue"} name={"blue2"} value={removeWhatColor.blue2} onChange={changeColor} />
@@ -196,16 +193,16 @@ export const App = () => {
           </div>
         </div>
 
-        <div className="flex bg-rgb-50-50-50">
-          <button className="btn" onClick={removeBackground}>
-            Remove Background
+        <div className="actions">
+          <button className="btn btn-primary" onClick={removeBackground}>
+            Quitar fondo
           </button>
           {images.some((image) => image.processed) && (
             <>
-              <button className="btn" onClick={downloadAll}>
-                Download All
+              <button className="btn btn-secondary" onClick={downloadAll}>
+                Descargar todo
               </button>
-              <select className="btn" onChange={downloadImageWith}>
+              <select className="btn-select" onChange={downloadImageWith}>
                 <option value="png">Png</option>
                 <option value="webp">Webp</option>
                 <option value="jpg">Jpg</option>
