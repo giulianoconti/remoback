@@ -91,24 +91,6 @@ export const App = () => {
     });
   };
 
-  const getPixel = (e) => {
-    if (!stopGetPixel) {
-      const canvas = canvasImgRef.current;
-      const ctx = canvas.getContext("2d");
-      const { clientX, clientY } = e;
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor(clientX - rect.left);
-      const y = Math.floor(clientY - rect.top);
-      const imageData = ctx.getImageData(x, y, 1, 1);
-      const data = imageData.data;
-      const red = data[0];
-      const green = data[1];
-      const blue = data[2];
-      const color = `rgb(${red}, ${green}, ${blue})`;
-      setColorMouseMove(color);
-    }
-  };
-
   // ----- Choose Color -----
   const changeColor = ({ target: { value, name } }) => {
     if (!isNaN(value) && value >= 0 && value <= 255) {
@@ -161,8 +143,6 @@ export const App = () => {
     setFileType(e.target.value);
   };
 
-  const handleStopGetPixel = () => setStopGetPixel(!stopGetPixel);
-
   return (
     <div className="bg-rgb-170-190-210 flex justify-center align-items-center flex-column">
       <div className="w-full max-w-530 outline-5 bg-rgb-50-50-50 border-radius-5 mt-10">
@@ -179,19 +159,21 @@ export const App = () => {
         </div>
 
         <div className="bg-transparent-img">
-          <img className="invisible" ref={imgRef} src={image} />
-          <canvas
-            className="flex mx-auto mouse-crosshair mb-10"
-            width={widthCanvasImg}
-            height={0}
-            ref={canvasImgRef}
-            onClick={handleStopGetPixel}
-            onMouseMove={getPixel}
-          ></canvas>
           <h3 className="text-center mx-auto text-shadow py-5" style={{ backgroundColor: `${colorMouseMove ? colorMouseMove : "rgba(255, 255, 255)"}` }}>
             {colorMouseMove ? colorMouseMove : "Click on the image to get the color"}
           </h3>
-          <canvas className="max-w-full flex mx-auto py-10" height={0} ref={canvasRef}></canvas>
+          <div className="flex flex-wrap justify-center">
+            {images.map((image) => (
+              <ImageCard
+                key={image.id}
+                ref={(el) => (cardRefs.current[image.id] = el)}
+                originalURL={image.originalURL}
+                name={image.name}
+                widthCanvasImg={widthCanvasImg}
+                onPixelPick={setColorMouseMove}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-column bg-rgb-50-50-50 p-10 text-white text-center">
