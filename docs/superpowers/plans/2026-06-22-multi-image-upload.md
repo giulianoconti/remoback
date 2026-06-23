@@ -15,6 +15,7 @@
 ## Current code being replaced
 
 `src/App.jsx` currently has (for reference while editing):
+
 - State: `imgRef`, `canvasRef`, `canvasImgRef` (all single refs), `image`, `saveFileURL`, `showDownloadButton` (all single values)
 - `showFile(file)` — takes one `File`, FileReader → `setImage`/`setSaveFileURL`, calls `loadImageInCanvas`
 - `loadImageInCanvas(fileURL)` — draws into `canvasImgRef.current`, sized off `imgRef.current.naturalWidth/Height`
@@ -30,6 +31,7 @@ All of this is being replaced by the array-based version below. `ChooseColorRang
 ### Task 1: Add jszip dependency
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Install jszip**
@@ -56,6 +58,7 @@ git commit -m "Add jszip dependency for multi-image zip download"
 ### Task 2: Create ImageCard component (one card per uploaded image)
 
 **Files:**
+
 - Create: `src/components/ImageCard.jsx`
 
 This component owns the two canvases (original preview + processed output) for a single image, mirroring what `App.jsx` currently does for the one global image. It exposes its canvas via a ref so `App.jsx` can run the removal algorithm and the zip export against it.
@@ -139,6 +142,7 @@ git commit -m "Add ImageCard component for per-image canvas rendering"
 ### Task 3: Replace single-image state with images array in App.jsx
 
 **Files:**
+
 - Modify: `src/App.jsx:1-39` (imports, state, the `widthWindow` effect)
 
 - [ ] **Step 1: Replace imports and refs/state**
@@ -216,27 +220,27 @@ Note: `stopGetPixel` and `showDownloadButton` are removed (`stopGetPixel` toggle
 Replace lines 31-39:
 
 ```jsx
-  useEffect(() => {
-    if (widthWindow < 530) {
-      setWidthCanvasImg(widthWindow - 1);
-      loadImageInCanvas(saveFileURL);
-    } else if (widthWindow >= 530 && widthWindow < 560) {
-      setWidthCanvasImg(530);
-      loadImageInCanvas(saveFileURL);
-    }
-  }, [widthWindow]);
+useEffect(() => {
+  if (widthWindow < 530) {
+    setWidthCanvasImg(widthWindow - 1);
+    loadImageInCanvas(saveFileURL);
+  } else if (widthWindow >= 530 && widthWindow < 560) {
+    setWidthCanvasImg(530);
+    loadImageInCanvas(saveFileURL);
+  }
+}, [widthWindow]);
 ```
 
 with:
 
 ```jsx
-  useEffect(() => {
-    if (widthWindow < 530) {
-      setWidthCanvasImg(widthWindow - 1);
-    } else if (widthWindow >= 530 && widthWindow < 560) {
-      setWidthCanvasImg(530);
-    }
-  }, [widthWindow]);
+useEffect(() => {
+  if (widthWindow < 530) {
+    setWidthCanvasImg(widthWindow - 1);
+  } else if (widthWindow >= 530 && widthWindow < 560) {
+    setWidthCanvasImg(530);
+  }
+}, [widthWindow]);
 ```
 
 (`ImageCard` redraws itself when `widthCanvasImg` changes via its own effect — see Task 2 — so `App.jsx` no longer calls `loadImageInCanvas` directly.)
@@ -259,6 +263,7 @@ git commit -m "Replace single-image state with images array"
 ### Task 4: Multi-file upload (drag&drop + browse) and per-image FileReader loading
 
 **Files:**
+
 - Modify: `src/App.jsx` (the `dragOver`/`dragLeave`/`fileDrop`/`browseFile`/`showFile`/`loadImageInCanvas` block, originally lines 41-110)
 
 - [ ] **Step 1: Replace upload handlers**
@@ -266,62 +271,51 @@ git commit -m "Replace single-image state with images array"
 Replace the block from `// ----- Drag & Drop Image -----` through the end of `loadImageInCanvas` (originally lines 41-110) with:
 
 ```jsx
-  // ----- Drag & Drop Image -----
-  const dragOver = (e) => {
-    e.preventDefault();
-    dropAreaRef.current.style.background = "rgb(150, 50, 150)";
-    setTextDropAreaRef("Drop Image");
-  };
-  const dragLeave = (e) => {
-    e.preventDefault();
-    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
-    setTextDropAreaRef("Drag & Drop To Upload File");
-  };
-  const fileDrop = (e) => {
-    e.preventDefault();
-    dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
-    setTextDropAreaRef("Drag & Drop To Upload File");
-    showFiles(e.dataTransfer.files);
-  };
+// ----- Drag & Drop Image -----
+const dragOver = (e) => {
+  e.preventDefault();
+  dropAreaRef.current.style.background = "rgb(150, 50, 150)";
+  setTextDropAreaRef("Drop Image");
+};
+const dragLeave = (e) => {
+  e.preventDefault();
+  dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+  setTextDropAreaRef("Drag & Drop To Upload File");
+};
+const fileDrop = (e) => {
+  e.preventDefault();
+  dropAreaRef.current.style.background = "linear-gradient(rgb(50, 50, 50), rgb(150, 50, 150))";
+  setTextDropAreaRef("Drag & Drop To Upload File");
+  showFiles(e.dataTransfer.files);
+};
 
-  // ----- Browse File Button -----
-  const browseFile = (e) => {
-    e.preventDefault();
-    showFiles(e.target.files);
-  };
+// ----- Browse File Button -----
+const browseFile = (e) => {
+  e.preventDefault();
+  showFiles(e.target.files);
+};
 
-  // ----- Load Every Selected/Dropped File -----
-  const validExtensions = [
-    "image/apng",
-    "image/avif",
-    "image/gif",
-    "image/jpeg",
-    "image/png",
-    "image/svg+xml",
-    "image/webp",
-    "image/bmp",
-    "image/x-icon",
-    "image/tiff",
-  ];
+// ----- Load Every Selected/Dropped File -----
+const validExtensions = ["image/apng", "image/avif", "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp", "image/bmp", "image/x-icon", "image/tiff"];
 
-  const showFiles = (fileList) => {
-    Array.from(fileList).forEach((file) => {
-      if (!validExtensions.includes(file.type)) return;
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        setImages((prev) => [
-          ...prev,
-          {
-            id: nextImageId++,
-            name: file.name.split(".")[0],
-            originalURL: fileReader.result,
-            processed: false,
-          },
-        ]);
-      };
-      fileReader.readAsDataURL(file);
-    });
-  };
+const showFiles = (fileList) => {
+  Array.from(fileList).forEach((file) => {
+    if (!validExtensions.includes(file.type)) return;
+    const fileReader = new FileReader();
+    fileReader.onload = () => {
+      setImages((prev) => [
+        ...prev,
+        {
+          id: nextImageId++,
+          name: file.name.split(".")[0],
+          originalURL: fileReader.result,
+          processed: false,
+        },
+      ]);
+    };
+    fileReader.readAsDataURL(file);
+  });
+};
 ```
 
 - [ ] **Step 2: Update the `<input>` to accept multiple files**
@@ -329,13 +323,13 @@ Replace the block from `// ----- Drag & Drop Image -----` through the end of `lo
 Find in the JSX (originally around line 193):
 
 ```jsx
-              <input className="d-none" onChange={browseFile} type="file" placeholder="hola" />
+<input className="d-none" onChange={browseFile} type="file" placeholder="hola" />
 ```
 
 Replace with:
 
 ```jsx
-              <input className="d-none" onChange={browseFile} type="file" multiple accept="image/*" />
+<input className="d-none" onChange={browseFile} type="file" multiple accept="image/*" />
 ```
 
 - [ ] **Step 3: Manual check**
@@ -356,6 +350,7 @@ git commit -m "Support selecting/dropping multiple image files at once"
 ### Task 5: Render the image grid and run pixel picking through ImageCard
 
 **Files:**
+
 - Modify: `src/App.jsx` (the `getPixel`/`changeColor` block and the main JSX return, originally lines 112-231)
 
 - [ ] **Step 1: Remove the old `getPixel` function**
@@ -363,23 +358,23 @@ git commit -m "Support selecting/dropping multiple image files at once"
 Delete this block (originally lines 112-128) — pixel picking now lives inside `ImageCard` (Task 2) and is wired via the `onPixelPick` prop:
 
 ```jsx
-  const getPixel = (e) => {
-    if (!stopGetPixel) {
-      const canvas = canvasImgRef.current;
-      const ctx = canvas.getContext("2d");
-      const { clientX, clientY } = e;
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor(clientX - rect.left);
-      const y = Math.floor(clientY - rect.top);
-      const imageData = ctx.getImageData(x, y, 1, 1);
-      const data = imageData.data;
-      const red = data[0];
-      const green = data[1];
-      const blue = data[2];
-      const color = `rgb(${red}, ${green}, ${blue})`;
-      setColorMouseMove(color);
-    }
-  };
+const getPixel = (e) => {
+  if (!stopGetPixel) {
+    const canvas = canvasImgRef.current;
+    const ctx = canvas.getContext("2d");
+    const { clientX, clientY } = e;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor(clientX - rect.left);
+    const y = Math.floor(clientY - rect.top);
+    const imageData = ctx.getImageData(x, y, 1, 1);
+    const data = imageData.data;
+    const red = data[0];
+    const green = data[1];
+    const blue = data[2];
+    const color = `rgb(${red}, ${green}, ${blue})`;
+    setColorMouseMove(color);
+  }
+};
 ```
 
 Keep `changeColor` (originally lines 130-138) exactly as-is — unchanged.
@@ -391,43 +386,43 @@ Also delete `const handleStopGetPixel = () => setStopGetPixel(!stopGetPixel);` (
 Replace the block from `<div className="bg-transparent-img">` through its closing `</div>` (originally lines 199-213):
 
 ```jsx
-        <div className="bg-transparent-img">
-          <img className="invisible" ref={imgRef} src={image} />
-          <canvas
-            className="flex mx-auto mouse-crosshair mb-10"
-            width={widthCanvasImg}
-            height={0}
-            ref={canvasImgRef}
-            onClick={handleStopGetPixel}
-            onMouseMove={getPixel}
-          ></canvas>
-          <h3 className="text-center mx-auto text-shadow py-5" style={{ backgroundColor: `${colorMouseMove ? colorMouseMove : "rgba(255, 255, 255)"}` }}>
-            {colorMouseMove ? colorMouseMove : "Click on the image to get the color"}
-          </h3>
-          <canvas className="max-w-full flex mx-auto py-10" height={0} ref={canvasRef}></canvas>
-        </div>
+<div className="bg-transparent-img">
+  <img className="invisible" ref={imgRef} src={image} />
+  <canvas
+    className="flex mx-auto mouse-crosshair mb-10"
+    width={widthCanvasImg}
+    height={0}
+    ref={canvasImgRef}
+    onClick={handleStopGetPixel}
+    onMouseMove={getPixel}
+  ></canvas>
+  <h3 className="text-center mx-auto text-shadow py-5" style={{ backgroundColor: `${colorMouseMove ? colorMouseMove : "rgba(255, 255, 255)"}` }}>
+    {colorMouseMove ? colorMouseMove : "Click on the image to get the color"}
+  </h3>
+  <canvas className="max-w-full flex mx-auto py-10" height={0} ref={canvasRef}></canvas>
+</div>
 ```
 
 with:
 
 ```jsx
-        <div className="bg-transparent-img">
-          <h3 className="text-center mx-auto text-shadow py-5" style={{ backgroundColor: `${colorMouseMove ? colorMouseMove : "rgba(255, 255, 255)"}` }}>
-            {colorMouseMove ? colorMouseMove : "Click on the image to get the color"}
-          </h3>
-          <div className="flex flex-wrap justify-center">
-            {images.map((image) => (
-              <ImageCard
-                key={image.id}
-                ref={(el) => (cardRefs.current[image.id] = el)}
-                originalURL={image.originalURL}
-                name={image.name}
-                widthCanvasImg={widthCanvasImg}
-                onPixelPick={setColorMouseMove}
-              />
-            ))}
-          </div>
-        </div>
+<div className="bg-transparent-img">
+  <h3 className="text-center mx-auto text-shadow py-5" style={{ backgroundColor: `${colorMouseMove ? colorMouseMove : "rgba(255, 255, 255)"}` }}>
+    {colorMouseMove ? colorMouseMove : "Click on the image to get the color"}
+  </h3>
+  <div className="flex flex-wrap justify-center">
+    {images.map((image) => (
+      <ImageCard
+        key={image.id}
+        ref={(el) => (cardRefs.current[image.id] = el)}
+        originalURL={image.originalURL}
+        name={image.name}
+        widthCanvasImg={widthCanvasImg}
+        onPixelPick={setColorMouseMove}
+      />
+    ))}
+  </div>
+</div>
 ```
 
 - [ ] **Step 3: Manual check**
@@ -448,6 +443,7 @@ git commit -m "Render uploaded images as a grid of ImageCard canvases"
 ### Task 6: Bulk Remove Background
 
 **Files:**
+
 - Modify: `src/App.jsx` (the `removeBackground` function, originally lines 140-167, and the button JSX, originally lines 233-249)
 
 - [ ] **Step 1: Replace `removeBackground` with a loop over all images**
@@ -455,44 +451,18 @@ git commit -m "Render uploaded images as a grid of ImageCard canvases"
 Replace the block (originally lines 140-167):
 
 ```jsx
-  // ----- Remove Background Button -----
-  const removeBackground = () => {
-    const img = imgRef.current;
-    const canvas = canvasRef.current;
-    if (img.src) {
-      canvas.width = imgRef.current.naturalWidth;
-      canvas.height = imgRef.current.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      const imageData = ctx.getImageData(0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      const data = imageData.data;
-      const newColor = { r: 0, g: 0, b: 0, a: 0 };
-      for (let i = 0; i < data.length; i += 4) {
-        if (
-          data[i] >= removeWhatColor.red1 &&
-          data[i] <= removeWhatColor.red2 &&
-          data[i + 1] >= removeWhatColor.green1 &&
-          data[i + 1] <= removeWhatColor.green2 &&
-          data[i + 2] >= removeWhatColor.blue1 &&
-          data[i + 2] <= removeWhatColor.blue2
-        ) {
-          data[i + 3] = newColor.a;
-        }
-      }
-      ctx.putImageData(imageData, 0, 0);
-      setShowDownloadButton(true);
-    }
-  };
-```
-
-with:
-
-```jsx
-  // ----- Remove Background Button -----
-  const removeBackgroundFromCanvas = (canvas) => {
+// ----- Remove Background Button -----
+const removeBackground = () => {
+  const img = imgRef.current;
+  const canvas = canvasRef.current;
+  if (img.src) {
+    canvas.width = imgRef.current.naturalWidth;
+    canvas.height = imgRef.current.naturalHeight;
     const ctx = canvas.getContext("2d");
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
+    const imageData = ctx.getImageData(0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
     const data = imageData.data;
+    const newColor = { r: 0, g: 0, b: 0, a: 0 };
     for (let i = 0; i < data.length; i += 4) {
       if (
         data[i] >= removeWhatColor.red1 &&
@@ -502,20 +472,46 @@ with:
         data[i + 2] >= removeWhatColor.blue1 &&
         data[i + 2] <= removeWhatColor.blue2
       ) {
-        data[i + 3] = 0;
+        data[i + 3] = newColor.a;
       }
     }
     ctx.putImageData(imageData, 0, 0);
-  };
+    setShowDownloadButton(true);
+  }
+};
+```
 
-  const removeBackground = () => {
-    images.forEach((image) => {
-      const card = cardRefs.current[image.id];
-      if (!card) return;
-      removeBackgroundFromCanvas(card.getCanvas());
-    });
-    setImages((prev) => prev.map((image) => ({ ...image, processed: true })));
-  };
+with:
+
+```jsx
+// ----- Remove Background Button -----
+const removeBackgroundFromCanvas = (canvas) => {
+  const ctx = canvas.getContext("2d");
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    if (
+      data[i] >= removeWhatColor.red1 &&
+      data[i] <= removeWhatColor.red2 &&
+      data[i + 1] >= removeWhatColor.green1 &&
+      data[i + 1] <= removeWhatColor.green2 &&
+      data[i + 2] >= removeWhatColor.blue1 &&
+      data[i + 2] <= removeWhatColor.blue2
+    ) {
+      data[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+};
+
+const removeBackground = () => {
+  images.forEach((image) => {
+    const card = cardRefs.current[image.id];
+    if (!card) return;
+    removeBackgroundFromCanvas(card.getCanvas());
+  });
+  setImages((prev) => prev.map((image) => ({ ...image, processed: true })));
+};
 ```
 
 Note: this runs against each card's already-rendered preview canvas (sized to `widthCanvasImg`, not full natural resolution) — same display-resolution behavior the grid already shows. This is a deliberate simplification: the original single-image flow processed the full natural-resolution image in a separate hidden canvas; processing the visible (possibly downscaled) canvas directly keeps the multi-image version simple and is consistent across all cards. Downscaling only happens when `naturalWidth >= widthCanvasImg` (per `ImageCard`'s `drawAtWidth`), so most images are unaffected.
@@ -538,6 +534,7 @@ git commit -m "Apply background removal to every uploaded image"
 ### Task 7: Download All as zip
 
 **Files:**
+
 - Modify: `src/App.jsx` (the `downloadImage`/`downloadImageWith` block, originally lines 169-180, and the button row JSX, originally lines 233-249)
 
 - [ ] **Step 1: Replace download functions**
@@ -545,44 +542,44 @@ git commit -m "Apply background removal to every uploaded image"
 Replace:
 
 ```jsx
-  // ----- Download Image Button-----
-  const downloadImage = () => {
-    const canvas = canvasRef.current;
-    const link = document.createElement("a");
-    link.download = imgRef.current.name + "-RemovedBG." + fileType;
-    link.href = canvas.toDataURL("image/" + fileType);
-    link.click();
-  };
+// ----- Download Image Button-----
+const downloadImage = () => {
+  const canvas = canvasRef.current;
+  const link = document.createElement("a");
+  link.download = imgRef.current.name + "." + fileType;
+  link.href = canvas.toDataURL("image/" + fileType);
+  link.click();
+};
 
-  const downloadImageWith = (e) => {
-    setFileType(e.target.value);
-  };
+const downloadImageWith = (e) => {
+  setFileType(e.target.value);
+};
 ```
 
 with:
 
 ```jsx
-  // ----- Download All Button -----
-  const downloadAll = async () => {
-    const zip = new JSZip();
-    for (const image of images) {
-      const card = cardRefs.current[image.id];
-      if (!card) continue;
-      const canvas = card.getCanvas();
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/" + fileType));
-      zip.file(`${image.name}-RemovedBG.${fileType}`, blob);
-    }
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const link = document.createElement("a");
-    link.download = "images.zip";
-    link.href = URL.createObjectURL(zipBlob);
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
+// ----- Download All Button -----
+const downloadAll = async () => {
+  const zip = new JSZip();
+  for (const image of images) {
+    const card = cardRefs.current[image.id];
+    if (!card) continue;
+    const canvas = card.getCanvas();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/" + fileType));
+    zip.file(`${image.name}.${fileType}`, blob);
+  }
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  const link = document.createElement("a");
+  link.download = "images.zip";
+  link.href = URL.createObjectURL(zipBlob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
 
-  const downloadImageWith = (e) => {
-    setFileType(e.target.value);
-  };
+const downloadImageWith = (e) => {
+  setFileType(e.target.value);
+};
 ```
 
 - [ ] **Step 2: Update the button row JSX**
@@ -590,52 +587,52 @@ with:
 Replace (originally lines 233-249):
 
 ```jsx
-        <div className="flex bg-rgb-50-50-50">
-          <button className="btn" onClick={removeBackground}>
-            Remove Background
-          </button>
-          {showDownloadButton && (
-            <>
-              <button className="btn" onClick={downloadImage}>
-                Download Image
-              </button>
-              <select className="btn" onChange={downloadImageWith}>
-                <option value="png">Png</option>
-                <option value="webp">Webp</option>
-                <option value="jpg">Jpg</option>
-              </select>
-            </>
-          )}
-        </div>
+<div className="flex bg-rgb-50-50-50">
+  <button className="btn" onClick={removeBackground}>
+    Remove Background
+  </button>
+  {showDownloadButton && (
+    <>
+      <button className="btn" onClick={downloadImage}>
+        Download Image
+      </button>
+      <select className="btn" onChange={downloadImageWith}>
+        <option value="png">Png</option>
+        <option value="webp">Webp</option>
+        <option value="jpg">Jpg</option>
+      </select>
+    </>
+  )}
+</div>
 ```
 
 with:
 
 ```jsx
-        <div className="flex bg-rgb-50-50-50">
-          <button className="btn" onClick={removeBackground}>
-            Remove Background
-          </button>
-          {images.some((image) => image.processed) && (
-            <>
-              <button className="btn" onClick={downloadAll}>
-                Download All
-              </button>
-              <select className="btn" onChange={downloadImageWith}>
-                <option value="png">Png</option>
-                <option value="webp">Webp</option>
-                <option value="jpg">Jpg</option>
-              </select>
-            </>
-          )}
-        </div>
+<div className="flex bg-rgb-50-50-50">
+  <button className="btn" onClick={removeBackground}>
+    Remove Background
+  </button>
+  {images.some((image) => image.processed) && (
+    <>
+      <button className="btn" onClick={downloadAll}>
+        Download All
+      </button>
+      <select className="btn" onChange={downloadImageWith}>
+        <option value="png">Png</option>
+        <option value="webp">Webp</option>
+        <option value="jpg">Jpg</option>
+      </select>
+    </>
+  )}
+</div>
 ```
 
 - [ ] **Step 3: Manual check**
 
 Run: `npm run dev`, upload 3 images, click "Remove Background", then "Download All".
 
-Expected: a single `images.zip` downloads. Unzip it and confirm it contains 3 files named `<original-name>-RemovedBG.png`, each with the background removed (transparent PNG opens showing checkerboard where background was).
+Expected: a single `images.zip` downloads. Unzip it and confirm it contains 3 files named `<original-name>.png`, each with the background removed (transparent PNG opens showing checkerboard where background was).
 
 - [ ] **Step 4: Commit**
 
@@ -649,6 +646,7 @@ git commit -m "Replace single-image download with zip of all processed images"
 ### Task 8: Final cleanup pass
 
 **Files:**
+
 - Modify: `src/App.jsx`
 
 - [ ] **Step 1: Search for now-dead references**
@@ -660,6 +658,7 @@ Expected: no output (all of these were removed in Tasks 3-7). If anything matche
 - [ ] **Step 2: Full manual run-through**
 
 Run: `npm run dev`. In the browser:
+
 1. Drag-and-drop 2 images, then browse-select 1 more image (total 3).
 2. Hover over each canvas, confirm color readout changes per-image.
 3. Adjust the red/green/blue min-max sliders.

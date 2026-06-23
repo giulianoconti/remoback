@@ -13,9 +13,13 @@ Let user upload many images at once, apply same color-range removal to all, down
 ### State shape
 
 Replace `image` (single) with `images`: array of
+
 ```js
-{ id, file, name, originalURL, processed }
+{
+  (id, file, name, originalURL, processed);
+}
 ```
+
 `id` = crypto.randomUUID() or incrementing counter. `name` = filename without extension (used for download name). `processed` = bool, true after Remove Background ran on that image.
 
 Each grid item renders its own `<canvas>` via a ref callback stored in a `canvasRefs` map (`{ [id]: HTMLCanvasElement }`) — refs can't be array state, use a `Map`/object kept in a `useRef`.
@@ -31,6 +35,7 @@ Uploading a single file is just the N=1 case of the same code path — no specia
 ### Rendering
 
 Grid of cards (CSS grid, wraps responsively), one per image:
+
 - `<canvas>` showing original (or processed result once `processed` true) — reuse existing `loadImageInCanvas` logic per-canvas
 - click handler same as today: get pixel color under cursor, set `colorMouseMove`
 - filename label
@@ -44,8 +49,9 @@ Color-range pickers (`ChooseColorRangeItem` / `ChooseColorColorItem`) stay exact
 ### Download All
 
 Replace `downloadImage()` with `downloadAll()`:
+
 1. For each image, `canvas.toBlob()` (format from existing `fileType` state: png/webp/jpg) to get a Blob.
-2. `JSZip` instance, `zip.file(`${name}-RemovedBG.${fileType}`, blob)` per image.
+2. `JSZip` instance, `zip.file(`${name}.${fileType}`, blob)` per image.
 3. `zip.generateAsync({type: "blob"})`, then anchor-click download as `images.zip`.
 
 New dependency: `jszip`.

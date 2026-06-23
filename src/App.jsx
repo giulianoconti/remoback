@@ -59,18 +59,7 @@ export const App = () => {
   };
 
   // ----- Load Every Selected/Dropped File -----
-  const validExtensions = [
-    "image/apng",
-    "image/avif",
-    "image/gif",
-    "image/jpeg",
-    "image/png",
-    "image/svg+xml",
-    "image/webp",
-    "image/bmp",
-    "image/x-icon",
-    "image/tiff",
-  ];
+  const validExtensions = ["image/apng", "image/avif", "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp", "image/bmp", "image/x-icon", "image/tiff"];
 
   const showFiles = (fileList) => {
     Array.from(fileList).forEach((file) => {
@@ -142,7 +131,7 @@ export const App = () => {
       const canvas = card.getCanvas();
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/" + fileType));
       if (!blob) continue;
-      zip.file(`${image.name}-RemovedBG.${fileType}`, blob);
+      zip.file(`${image.name}.${fileType}`, blob);
     }
     const zipBlob = await zip.generateAsync({ type: "blob" });
     const link = document.createElement("a");
