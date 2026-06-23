@@ -102,32 +102,32 @@ export const App = () => {
   };
 
   // ----- Remove Background Button -----
-  const removeBackground = () => {
-    const img = imgRef.current;
-    const canvas = canvasRef.current;
-    if (img.src) {
-      canvas.width = imgRef.current.naturalWidth;
-      canvas.height = imgRef.current.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      const imageData = ctx.getImageData(0, 0, imgRef.current.naturalWidth, imgRef.current.naturalHeight);
-      const data = imageData.data;
-      const newColor = { r: 0, g: 0, b: 0, a: 0 };
-      for (let i = 0; i < data.length; i += 4) {
-        if (
-          data[i] >= removeWhatColor.red1 &&
-          data[i] <= removeWhatColor.red2 &&
-          data[i + 1] >= removeWhatColor.green1 &&
-          data[i + 1] <= removeWhatColor.green2 &&
-          data[i + 2] >= removeWhatColor.blue1 &&
-          data[i + 2] <= removeWhatColor.blue2
-        ) {
-          data[i + 3] = newColor.a;
-        }
+  const removeBackgroundFromCanvas = (canvas) => {
+    const ctx = canvas.getContext("2d");
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (
+        data[i] >= removeWhatColor.red1 &&
+        data[i] <= removeWhatColor.red2 &&
+        data[i + 1] >= removeWhatColor.green1 &&
+        data[i + 1] <= removeWhatColor.green2 &&
+        data[i + 2] >= removeWhatColor.blue1 &&
+        data[i + 2] <= removeWhatColor.blue2
+      ) {
+        data[i + 3] = 0;
       }
-      ctx.putImageData(imageData, 0, 0);
-      setShowDownloadButton(true);
     }
+    ctx.putImageData(imageData, 0, 0);
+  };
+
+  const removeBackground = () => {
+    images.forEach((image) => {
+      const card = cardRefs.current[image.id];
+      if (!card) return;
+      removeBackgroundFromCanvas(card.getCanvas());
+    });
+    setImages((prev) => prev.map((image) => ({ ...image, processed: true })));
   };
 
   // ----- Download Image Button-----
@@ -198,7 +198,7 @@ export const App = () => {
           <button className="btn" onClick={removeBackground}>
             Remove Background
           </button>
-          {showDownloadButton && (
+          {images.some((image) => image.processed) && (
             <>
               <button className="btn" onClick={downloadImage}>
                 Download Image
