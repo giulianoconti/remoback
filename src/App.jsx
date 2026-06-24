@@ -149,17 +149,17 @@ export const App = () => {
         <div className={`dropzone unselectable${hasImages ? " dropzone-compact" : ""}`} ref={dropAreaRef} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={fileDrop}>
           {!hasImages && <div className="dropzone-icon" />}
           {!hasImages && <div className="dropzone-title">{textDropAreaRef}</div>}
-          {!hasImages && <div className="dropzone-sub">o elegí un archivo</div>}
+          {!hasImages && <div className="dropzone-sub">or choose a file</div>}
           <label>
             <input className="d-none" onChange={browseFile} type="file" multiple accept="image/*" />
-            <span className={hasImages ? "btn-add-more" : "btn-browse"}>{hasImages ? "+ Agregar más" : "Browse File"}</span>
+            <span className={hasImages ? "btn-add-more" : "btn-browse"}>{hasImages ? "+ Add more" : "Browse File"}</span>
           </label>
         </div>
 
         {hasImages && (
           <div className="image-section">
             <div className="color-readout" style={{ backgroundColor: colorMouseMove || "#ffffff", color: readoutTextColor(colorMouseMove) }}>
-              {colorMouseMove || "Tocá una imagen para ver su color"}
+              {colorMouseMove || "Tap an image to see its color"}
             </div>
             <div className="image-grid">
               {images.map((image) => (
@@ -196,12 +196,12 @@ export const App = () => {
 
         <div className="actions">
           <button className="btn btn-primary" onClick={removeBackground}>
-            Quitar fondo
+            Remove Background
           </button>
           {images.some((image) => image.processed) && (
             <>
               <button className="btn btn-secondary" onClick={downloadAll}>
-                Descargar todo
+                Download All
               </button>
               <select className="btn-select" onChange={downloadImageWith}>
                 <option value="png">Png</option>
