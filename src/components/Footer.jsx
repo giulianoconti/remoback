@@ -1,8 +1,8 @@
 export const Footer = () => {
   return (
-    <footer className="flex py-15 mb-10">
+    <footer className="app-footer">
       <p>Made by:</p>
-      <a className="hover_color-black color-rgba-0-0-0-06 hover_color-black text-decoration-none" href="https://www.linkedin.com/in/giulianoconti/" target="_blank">
+      <a href="https://www.linkedin.com/in/giulianoconti/" target="_blank" rel="noreferrer">
         Giuliano Conti
       </a>
     </footer>
