@@ -136,16 +136,17 @@ export const App = () => {
     setFileType(e.target.value);
   };
 
+  const readoutTextColor = (rgb) => {
+    if (!rgb) return undefined;
+    const [r, g, b] = rgb.match(/\d+/g).map(Number);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? "#1f2330" : "#ffffff";
+  };
+
   return (
     <div className="app-shell">
       <div className="app-container">
-        <div
-          className={`dropzone unselectable${hasImages ? " dropzone-compact" : ""}`}
-          ref={dropAreaRef}
-          onDragOver={dragOver}
-          onDragLeave={dragLeave}
-          onDrop={fileDrop}
-        >
+        <div className={`dropzone unselectable${hasImages ? " dropzone-compact" : ""}`} ref={dropAreaRef} onDragOver={dragOver} onDragLeave={dragLeave} onDrop={fileDrop}>
           {!hasImages && <div className="dropzone-icon" />}
           {!hasImages && <div className="dropzone-title">{textDropAreaRef}</div>}
           {!hasImages && <div className="dropzone-sub">o elegí un archivo</div>}
@@ -157,7 +158,7 @@ export const App = () => {
 
         {hasImages && (
           <div className="image-section">
-            <div className="color-readout" style={{ backgroundColor: colorMouseMove || "#ffffff" }}>
+            <div className="color-readout" style={{ backgroundColor: colorMouseMove || "#ffffff", color: readoutTextColor(colorMouseMove) }}>
               {colorMouseMove || "Tocá una imagen para ver su color"}
             </div>
             <div className="image-grid">
