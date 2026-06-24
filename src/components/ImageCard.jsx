@@ -3,7 +3,6 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 const MAX_PREVIEW_DIMENSION = 800;
 
 export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPixelPick, processed }, ref) {
-  const imgRef = useRef(null);
   const fullCanvasRef = useRef(null);
   const displayCanvasRef = useRef(null);
 
@@ -20,7 +19,6 @@ export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPi
     const img = new Image();
     img.src = originalURL;
     img.onload = () => {
-      imgRef.current = img;
       const fullCanvas = fullCanvasRef.current;
       fullCanvas.width = img.naturalWidth;
       fullCanvas.height = img.naturalHeight;
@@ -38,8 +36,10 @@ export const ImageCard = forwardRef(function ImageCard({ originalURL, name, onPi
     const canvas = displayCanvasRef.current;
     const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
-    const x = Math.floor(e.clientX - rect.left);
-    const y = Math.floor(e.clientY - rect.top);
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
     if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
     const data = ctx.getImageData(x, y, 1, 1).data;
     onPixelPick(`rgb(${data[0]}, ${data[1]}, ${data[2]})`);
